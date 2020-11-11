@@ -1,4 +1,4 @@
-package com.dev.room1demo;
+package com.dev.words;
 
 import org.junit.Test;
 

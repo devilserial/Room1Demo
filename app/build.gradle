@@ -5,7 +5,7 @@ android {
     buildToolsVersion "30.0.2"
 
     defaultConfig {
-        applicationId "com.dev.room1demo"
+        applicationId "com.dev.words"
         minSdkVersion 16
         targetSdkVersion 30
         versionCode 1

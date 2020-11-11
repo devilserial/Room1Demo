@@ -1,4 +1,4 @@
-package com.dev.room1demo;
+package com.dev.words;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -42,26 +42,8 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         } else {
             itemView = layoutInflater.inflate(R.layout.cell_normal_2, parent, false);
         }
-
-        //返回实例化的自定义的MyViewHolder
-        return new MyViewHolder(itemView);
-
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
-        final Word word = allWords.get(position);
-        holder.textViewNum.setText(String.valueOf(position));
-        holder.textViewEnglish.setText(word.getWord());
-        holder.textViewChinese.setText(word.getChineseMeaning());
-        holder.chineseInvisible.setOnCheckedChangeListener(null);
-        if(word.isBar()){
-            holder.textViewChinese.setVisibility(View.GONE);
-            holder.chineseInvisible.setChecked(true);
-        }else{
-            holder.textViewChinese.setVisibility(View.VISIBLE);
-            holder.chineseInvisible.setChecked(false);
-        }
+        //定义一个final ,不能被改变的
+        final MyViewHolder holder = new MyViewHolder(itemView);
         /**
          * item被点击时候的逻辑
          */
@@ -80,18 +62,41 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
         holder.chineseInvisible.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                Word word = (Word) holder.itemView.getTag(R.id.word_for_viewholder);
                 if(isChecked){
                     holder.textViewChinese.setVisibility(View.GONE);
                     word.setBar(true);
                     wordViewModel.updateWords(word);
                 }else {
                     holder.textViewChinese.setVisibility(View.VISIBLE);
-                   word.setBar(false);
-                   wordViewModel.updateWords(word);
+                    word.setBar(false);
+                    wordViewModel.updateWords(word);
 
                 }
             }
         });
+        //返回实例化的自定义的MyViewHolder
+        return holder;
+
+    }
+
+    @Override
+    public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
+        final Word word = allWords.get(position);
+        holder.itemView.setTag(R.id.word_for_viewholder,word);
+        holder.textViewNum.setText(String.valueOf(position));
+        holder.textViewEnglish.setText(word.getWord());
+        holder.textViewChinese.setText(word.getChineseMeaning());
+
+        if(word.isBar()){
+            holder.textViewChinese.setVisibility(View.GONE);
+            holder.chineseInvisible.setChecked(true);
+        }else{
+            holder.textViewChinese.setVisibility(View.VISIBLE);
+            holder.chineseInvisible.setChecked(false);
+        }
+
+
     }
 
     @Override

@@ -1,7 +1,6 @@
-package com.dev.room1demo;
+package com.dev.words;
 
 import android.app.Application;
-import android.os.AsyncTask;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;

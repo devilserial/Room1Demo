@@ -1,4 +1,4 @@
-package com.dev.room1demo;
+package com.dev.words;
 
 import androidx.lifecycle.LiveData;
 import androidx.room.Dao;

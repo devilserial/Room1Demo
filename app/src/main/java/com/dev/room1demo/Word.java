@@ -13,6 +13,18 @@ public class Word {
     @ColumnInfo(name = "chineseMeaning")
     private String chineseMeaning;
 
+    @ColumnInfo(name = "bar_data")
+    private boolean bar;
+
+    public boolean isBar() {
+        return bar;
+    }
+
+    public void setBar(boolean bar) {
+        this.bar = bar;
+    }
+
+
     public Word(String word, String chineseMeaning) {
         this.word = word;
         this.chineseMeaning = chineseMeaning;

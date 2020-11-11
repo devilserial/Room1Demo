@@ -29,15 +29,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
+        wordViewModel = new ViewModelProvider(this, new ViewModelProvider.AndroidViewModelFactory(getApplication())).get(WordViewModel.class);
         buttonInsert = findViewById(R.id.buttonInsert);
 
         buttonClear = findViewById(R.id.buttonClear);
 
         recyclerView = findViewById(R.id.recylerView);
         aSwitch = findViewById(R.id.switch1);
-        myAdapter1 = new MyAdapter(false);
-        myAdapter2 = new MyAdapter(true);
+        myAdapter1 = new MyAdapter(false,wordViewModel);
+        myAdapter2 = new MyAdapter(true,wordViewModel);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(myAdapter1);
         aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -54,16 +54,19 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
-        wordViewModel = new ViewModelProvider(this, new ViewModelProvider.AndroidViewModelFactory(getApplication())).get(WordViewModel.class);
+
 
         //观察数据库的内容变化
         wordViewModel.getListLiveDataWords().observe(this, new Observer<List<Word>>() {
             @Override
             public void onChanged(List<Word> words) {
+                int temp = myAdapter1.getItemCount();
                 myAdapter1.setAllWords(words);
                 myAdapter2.setAllWords(words);
-                myAdapter1.notifyDataSetChanged();
-                myAdapter2.notifyDataSetChanged();
+                if(temp != words.size()){
+                    myAdapter1.notifyDataSetChanged();
+                    myAdapter2.notifyDataSetChanged();
+                }
             }
         });
 

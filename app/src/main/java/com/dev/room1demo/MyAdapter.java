@@ -38,7 +38,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
         View itemView;
         if (cardView) {
-            itemView = layoutInflater.inflate(R.layout.cell_card, parent, false);
+            itemView = layoutInflater.inflate(R.layout.cell_card_2, parent, false);
         } else {
             itemView = layoutInflater.inflate(R.layout.cell_normal_2, parent, false);
         }
@@ -62,7 +62,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
             holder.textViewChinese.setVisibility(View.VISIBLE);
             holder.chineseInvisible.setChecked(false);
         }
-
+        /**
+         * item被点击时候的逻辑
+         */
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -72,6 +74,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
                 holder.itemView.getContext().startActivity(intent);
             }
         });
+        /**
+         * switch控制的逻辑
+         */
         holder.chineseInvisible.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {

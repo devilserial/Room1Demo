@@ -7,9 +7,9 @@
 
     <fragment
         android:id="@+id/wordFragment"
-        android:name="com.dev.words.WordFragment"
-        android:label="fragment_word"
-        tools:layout="@layout/fragment_word" >
+        android:name="com.dev.words.wordFragment"
+        android:label="WORD"
+        tools:layout="@layout/fragment_word">
         <action
             android:id="@+id/action_wordFragment_to_addFragment"
             app:destination="@id/addFragment" />
@@ -17,6 +17,6 @@
     <fragment
         android:id="@+id/addFragment"
         android:name="com.dev.words.AddFragment"
-        android:label="fragment_add"
+        android:label="添加"
         tools:layout="@layout/fragment_add" />
 </navigation>

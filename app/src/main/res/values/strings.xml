@@ -1,8 +1,10 @@
 <resources>
     <string name="app_name">Words</string>
     <string name="app_message">info</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="app_addTitel">添加单词</string>
-    <string name="app_submit">确认</string>
+    <string name="app_addTitle">添加单词</string>
+    <string name="app_confirm">确认</string>
 </resources>

@@ -5,6 +5,9 @@ import android.os.Bundle;
 
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.Navigation;
+import androidx.navigation.ui.NavigationUI;
 
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -68,19 +71,21 @@ public class AddFragment extends Fragment {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_add, container, false);
     }
-    private Button buttonSubmit;
     private EditText editEnglish,editChinese;
+    private Button buttonSbumit;
+    private WordViewModel wordViewModel;
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        buttonSubmit = requireActivity().findViewById(R.id.buttonSubmit);
         editEnglish = requireActivity().findViewById(R.id.editEnglish);
         editChinese = requireActivity().findViewById(R.id.editChinese);
-        buttonSubmit.setEnabled(false);
+        buttonSbumit = requireActivity().findViewById(R.id.buttonSubmit);
+        wordViewModel = new ViewModelProvider(requireActivity(),
+                new ViewModelProvider.AndroidViewModelFactory(requireActivity().getApplication())).get(WordViewModel.class);
+        buttonSbumit.setEnabled(false);
         editEnglish.requestFocus();
         InputMethodManager inputMethodManager = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         inputMethodManager.showSoftInput(editEnglish,0);
-
         TextWatcher textWatcher = new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
@@ -91,7 +96,7 @@ public class AddFragment extends Fragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 String english = editEnglish.getText().toString().trim();
                 String chinese = editChinese.getText().toString().trim();
-                buttonSubmit.setEnabled(!english.isEmpty() && !chinese.isEmpty());
+                buttonSbumit.setEnabled(  !english.isEmpty() && !chinese.isEmpty());
             }
 
             @Override
@@ -99,6 +104,21 @@ public class AddFragment extends Fragment {
 
             }
         };
-
+        editEnglish.addTextChangedListener(textWatcher);
+        editChinese.addTextChangedListener(textWatcher);
+        buttonSbumit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String english = editEnglish.getText().toString().trim();
+                String chinese = editChinese.getText().toString().trim();
+                Word word = new Word(english,chinese);
+                wordViewModel.insertWords(word);
+                Navigation.findNavController(v).navigateUp();
+                InputMethodManager inputMethodManager1 = (InputMethodManager) requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                inputMethodManager1.hideSoftInputFromWindow(v.getWindowToken(),0);
+            }
+        });
     }
+
+
 }

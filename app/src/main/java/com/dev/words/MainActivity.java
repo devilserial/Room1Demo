@@ -19,26 +19,20 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-
-    private NavController controller;
+    NavController controller;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        controller = Navigation.findNavController(findViewById(R.id.fragment));
+        controller = Navigation.findNavController(this,R.id.fragment);
         NavigationUI.setupActionBarWithNavController(this,controller);
-    }
-
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        controller.navigateUp();
     }
 
     @Override
     public boolean onSupportNavigateUp() {
         controller.navigateUp();
         return super.onSupportNavigateUp();
+
     }
 }

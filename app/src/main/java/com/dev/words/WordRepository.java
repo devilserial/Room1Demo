@@ -23,7 +23,9 @@ public class WordRepository {
     public LiveData<List<Word>> getLiveDataWords() {
         return liveDataWords;
     }
-
+    public LiveData<List<Word>> getSeacheWords(String patten){
+        return wordDao.getSearchWords("%"+patten+"%");
+    }
     //封装方法，执行每个对应的线程
     public void insertWords(Word... words) {
         new InsertAsyncTask(wordDao).execute(words);

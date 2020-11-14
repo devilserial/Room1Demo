@@ -33,6 +33,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
+
 /**
  * A simple {@link Fragment} subclass.
  * Use the {@link wordFragment#newInstance} factory method to

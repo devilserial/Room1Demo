@@ -4,10 +4,15 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
@@ -19,6 +24,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -271,9 +277,54 @@ public class wordFragment extends Fragment {
                                 wordViewModel.insertWords(wordToDelete);
                             }
                         }).show();
-
             }
+
+            Drawable icon = ContextCompat.getDrawable(requireActivity(),R.drawable.ic_baseline_delete_24);
+            Drawable background = new ColorDrawable(Color.RED);
+
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+                View itemView = viewHolder.itemView;
+                //算出居中应该设置的margin
+                int iconMargin = (itemView.getHeight() - icon.getIntrinsicHeight()) / 2;
+
+                int iconLeft,iconRight,iconTop,iconBottom;
+                int backTop,backBottom,backLeft,backRight;
+                backTop = itemView.getTop();
+
+                backBottom = itemView.getBottom();
+                //Top+margin
+                iconTop = itemView.getTop() + (itemView.getHeight() - icon.getIntrinsicHeight()) /2;
+                //top+margin+图标高度
+                iconBottom = iconTop + icon.getIntrinsicHeight();
+
+                if (dX > 0) {
+                    backLeft = itemView.getLeft();
+                    backRight = itemView.getLeft() + (int)dX;
+                    background.setBounds(backLeft,backTop,backRight,backBottom);
+                    iconLeft = itemView.getLeft() + iconMargin ;
+                    iconRight = iconLeft + icon.getIntrinsicWidth();
+                    icon.setBounds(iconLeft,iconTop,iconRight,iconBottom);
+                } else if (dX < 0){
+                    backRight = itemView.getRight();
+                    backLeft = itemView.getRight() + (int)dX;
+                    background.setBounds(backLeft,backTop,backRight,backBottom);
+                    iconRight = itemView.getRight()  - iconMargin;
+                    iconLeft = iconRight - icon.getIntrinsicWidth();
+                    icon.setBounds(iconLeft,iconTop,iconRight,iconBottom);
+                } else {
+                    background.setBounds(0,0,0,0);
+                    icon.setBounds(0,0,0,0);
+                }
+                background.draw(c);
+                icon.draw(c);
+            }
+
+
         }).attachToRecyclerView(recyclerView);
+
+
     }
 
 

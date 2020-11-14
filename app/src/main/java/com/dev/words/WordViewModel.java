@@ -20,7 +20,9 @@ public class WordViewModel extends AndroidViewModel {
     public LiveData<List<Word>> getListLiveDataWords() {
         return wordRepository.getLiveDataWords();
     }
-
+    public LiveData<List<Word>> getSeachWords(String patten){
+        return wordRepository.getSeacheWords(patten);
+    }
     //封装方法，执行每个对应的线程
     public void insertWords(Word... words) {
         wordRepository.insertWords(words);

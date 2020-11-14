@@ -10,21 +10,34 @@ import android.widget.Switch;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
-    List<Word> allWords = new ArrayList<>();
+public class MyAdapter extends ListAdapter<Word,MyAdapter.MyViewHolder> {
+
     boolean cardView;
     WordViewModel wordViewModel;
 
-    public void setAllWords(List<Word> allWords) {
-        this.allWords = allWords;
-    }
+
 
     public MyAdapter(boolean cardView,WordViewModel wordViewModel) {
+        super(new DiffUtil.ItemCallback<Word>() {
+            @Override
+            public boolean areItemsTheSame(@NonNull Word oldItem, @NonNull Word newItem) {
+                return oldItem.getId() == newItem.getId();
+            }
+
+            @Override
+            public boolean areContentsTheSame(@NonNull Word oldItem, @NonNull Word newItem) {
+                return (oldItem.getWord().equals(newItem.getWord())
+                        && oldItem.getChineseMeaning().equals(newItem.getChineseMeaning())
+                        && oldItem.isBar() == newItem.isBar());
+            }
+        });
         this.cardView = cardView;
         this.wordViewModel = wordViewModel;
     }
@@ -82,7 +95,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull final MyViewHolder holder, int position) {
-        final Word word = allWords.get(position);
+        final Word word = getItem(position);
         holder.itemView.setTag(R.id.word_for_viewholder,word);
         holder.textViewNum.setText(String.valueOf(position));
         holder.textViewEnglish.setText(word.getWord());
@@ -100,8 +113,9 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.MyViewHolder> {
     }
 
     @Override
-    public int getItemCount() {
-        return allWords.size();
+    public void onViewAttachedToWindow(@NonNull MyViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        holder.textViewNum.setText(String.valueOf(holder.getAdapterPosition()+1));
     }
 
     //首先定义自己的ViewHolder

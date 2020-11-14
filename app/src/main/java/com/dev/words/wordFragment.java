@@ -13,10 +13,12 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -27,6 +29,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.SearchView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.List;
 
@@ -52,6 +55,9 @@ public class wordFragment extends Fragment {
     private LiveData<List<Word>>    filterWords;
     public static final String VIEW_TYPE_SHP="view_type_shp";
     public static final String IS_USING_CARDVIEW = "is_using_cardview";
+    private List<Word> allWords;
+    private boolean undo ;
+    private DividerItemDecoration dividerItemDecoration;
 
     public wordFragment() {
         // Required empty public constructor
@@ -96,17 +102,16 @@ public class wordFragment extends Fragment {
             @Override
             public boolean onQueryTextChange(String newText) {
                 String patten = newText.trim();
-                filterWords.removeObservers(requireActivity());
+                filterWords.removeObservers(getViewLifecycleOwner());
                 filterWords = wordViewModel.getSeachWords(patten);
-                filterWords.observe(requireActivity(), new Observer<List<Word>>() {
+                filterWords.observe(getViewLifecycleOwner(), new Observer<List<Word>>() {
                     @Override
                     public void onChanged(List<Word> words) {
                         int temp = myAdapter1.getItemCount();
-                        myAdapter1.setAllWords(words);
-                        myAdapter2.setAllWords(words);
+                        allWords = words;
                         if (temp != words.size()) {
-                            myAdapter1.notifyDataSetChanged();
-                            myAdapter2.notifyDataSetChanged();
+                            myAdapter1.submitList(words);
+                            myAdapter2.submitList(words);
                         }
                     }
                 });
@@ -147,9 +152,11 @@ public class wordFragment extends Fragment {
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 if(viewType){
                     recyclerView.setAdapter(myAdapter1);
+                    recyclerView.addItemDecoration(dividerItemDecoration);
                     editor.putBoolean(IS_USING_CARDVIEW,false);
                 }else{
                     recyclerView.setAdapter(myAdapter2);
+                    recyclerView.removeItemDecoration(dividerItemDecoration);
                     editor.putBoolean(IS_USING_CARDVIEW,true);
                 }
                 editor.apply();
@@ -189,23 +196,45 @@ public class wordFragment extends Fragment {
         recyclerView = requireActivity().findViewById(R.id.recyclerView);
         floatingActionButton = requireActivity().findViewById(R.id.floatingActionButton);
         recyclerView.setLayoutManager(new LinearLayoutManager(requireActivity()));
+        recyclerView.setItemAnimator(new DefaultItemAnimator(){
+            @Override
+            public void onAnimationFinished(@NonNull RecyclerView.ViewHolder viewHolder) {
+                super.onAnimationFinished(viewHolder);
+                LinearLayoutManager linearLayoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                if(linearLayoutManager != null){
+                    int firstPosistion = linearLayoutManager.findFirstVisibleItemPosition();
+                    int lastPosition = linearLayoutManager.findLastVisibleItemPosition();
+                    for( int i = firstPosistion;i<=lastPosition;i++){
+                        MyAdapter.MyViewHolder holder = (MyAdapter.MyViewHolder) recyclerView.findViewHolderForAdapterPosition(i);
+                        if(holder !=null){
+                            holder.textViewNum.setText(String.valueOf(i+1));
+                        }
+                    }
+                }
+            }
+        });
         SharedPreferences sharedPreferences = requireActivity().getSharedPreferences(VIEW_TYPE_SHP, Context.MODE_PRIVATE);
         boolean viewType = sharedPreferences.getBoolean(IS_USING_CARDVIEW,false);
+        dividerItemDecoration = new DividerItemDecoration(requireActivity(),DividerItemDecoration.VERTICAL);
         if(viewType){
             recyclerView.setAdapter(myAdapter2);
         }else{
             recyclerView.setAdapter(myAdapter1);
+            recyclerView.addItemDecoration(dividerItemDecoration);
         }
         filterWords = wordViewModel.getListLiveDataWords();
-        filterWords.observe(requireActivity(), new Observer<List<Word>>() {
+        filterWords.observe(getViewLifecycleOwner(), new Observer<List<Word>>() {
             @Override
             public void onChanged(List<Word> words) {
                 int temp = myAdapter1.getItemCount();
-                myAdapter1.setAllWords(words);
-                myAdapter2.setAllWords(words);
+                allWords = words;
                 if (temp != words.size()) {
-                    myAdapter1.notifyDataSetChanged();
-                    myAdapter2.notifyDataSetChanged();
+                    if(temp<words.size() && !undo){
+                        recyclerView.smoothScrollBy(0,-200 );
+                    }
+                    undo = false;
+                    myAdapter1.submitList(words);
+                    myAdapter2.submitList(words);
                 }
             }
         });
@@ -215,7 +244,37 @@ public class wordFragment extends Fragment {
                 Navigation.findNavController(v).navigate(R.id.action_wordFragment_to_addFragment);
             }
         });
+        new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.UP | ItemTouchHelper.DOWN,ItemTouchHelper.START | ItemTouchHelper.END) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                Word wordFrom = allWords.get(viewHolder.getAdapterPosition());
+                Word wordTo = allWords.get(target.getAdapterPosition());
+                int idTemp = wordFrom.getId();
+                wordFrom.setId(wordTo.getId());
+                wordTo.setId(idTemp);
+                wordViewModel.updateWords(wordFrom,wordTo);
+                myAdapter1.notifyItemMoved(viewHolder.getAdapterPosition(),target.getAdapterPosition());
+                myAdapter2.notifyItemMoved(viewHolder.getAdapterPosition(),target.getAdapterPosition());
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                final Word wordToDelete = allWords.get(viewHolder.getAdapterPosition());
+                wordViewModel.deleteWords(wordToDelete);
+                Snackbar.make(requireActivity().findViewById(R.id.fragmentWordView),"删除了一个词汇",Snackbar.LENGTH_SHORT)
+                        .setAction("撤销", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                undo = true;
+                                wordViewModel.insertWords(wordToDelete);
+                            }
+                        }).show();
+
+            }
+        }).attachToRecyclerView(recyclerView);
     }
+
 
     @Override
     public void onResume() {
